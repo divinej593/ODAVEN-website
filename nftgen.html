@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta
+      name="description"
+      content="ODAVEN NFT Studio — Create generative NFT collections with layered artwork, traits, rarity and marketplace-ready metadata."
+    />
+
+    <meta name="theme-color" content="#f5f4ef" />
+
+    <title>ODAVEN NFT Studio</title>
+
+    <link rel="stylesheet" href="nftgen.css" />
+
+    <!-- Google AdSense -->
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3923660938499775"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+
+  <body>
+    <!-- HEADER -->
+    <header class="studio-header">
+      <a href="index.html" class="logo" aria-label="ODAVEN Home">
+        <img src="odaven-logo.png" alt="ODAVEN" />
+        <span>ODAVEN NFT STUDIO</span>
+      </a>
+
+      <a href="index.html">← Back</a>
+    </header>
+
+    <!-- TOP AD -->
+    <div class="ad-slot" aria-label="Advertisement">
+      <!-- AdSense -->
+    </div>
+
+    <main>
+      <!-- TITLE -->
+      <section class="studio-title">
+        <p>NFT CREATOR</p>
+
+        <h1>Create Your Collection</h1>
+
+        <p>
+          Build unique NFTs with layered artwork, traits, rarity and
+          marketplace-ready metadata.
+        </p>
+      </section>
+
+      <!-- GENERATOR -->
+      <section class="generator" aria-label="ODAVEN NFT Generator">
+        <!-- STEPS -->
+        <div class="steps" aria-label="Generator steps">
+          <span class="active">1. Setup</span>
+          <span>2. Layers</span>
+          <span>3. Traits</span>
+          <span>4. Generate</span>
+          <span>5. Export</span>
+        </div>
+
+        <!-- ======================================================
+             STEP 1: SETUP
+        ======================================================= -->
+        <div class="panel" id="setup">
+          <h2>Collection Setup</h2>
+
+          <label for="collection-name"> Collection Name </label>
+
+          <input
+            id="collection-name"
+            type="text"
+            value="ODAVEN"
+            maxlength="100"
+            autocomplete="off"
+            placeholder="ODAVEN"
+          />
+
+          <label for="collection-description"> Description </label>
+
+          <textarea
+            id="collection-description"
+            maxlength="2000"
+            placeholder="Describe your NFT collection"
+          ></textarea>
+
+          <label for="nft-count"> Number of NFTs </label>
+
+          <input
+            id="nft-count"
+            type="number"
+            min="1"
+            max="5000"
+            value="10"
+            inputmode="numeric"
+          />
+
+          <small> Maximum 5,000 NFTs. </small>
+
+          <label for="external-url"> Collection Website </label>
+
+          <input
+            id="external-url"
+            type="url"
+            maxlength="500"
+            placeholder="https://yourwebsite.com"
+            autocomplete="url"
+          />
+
+          <small> Optional. This can be included in your NFT metadata. </small>
+
+          <label for="image-base-uri"> Image Base URI </label>
+
+          <input
+            id="image-base-uri"
+            type="text"
+            maxlength="1000"
+            placeholder="ipfs://YOUR_CID/"
+            autocomplete="off"
+          />
+
+          <small>
+            Optional during generation. Add your final IPFS URI when your images
+            have been uploaded.
+          </small>
+
+          <button type="button" id="continue-layers">Continue →</button>
+        </div>
+
+        <!-- ======================================================
+             STEP 2: LAYERS
+        ======================================================= -->
+        <div class="panel hidden" id="layers">
+          <h2>Layers</h2>
+
+          <p>Create the image categories that will build your NFTs.</p>
+
+          <button type="button" id="add-layer">+ Add Layer</button>
+
+          <div id="layer-list" class="layer-list" aria-live="polite"></div>
+
+          <div class="button-row">
+            <button type="button" id="back-setup">← Back</button>
+
+            <button type="button" id="continue-traits">Continue →</button>
+          </div>
+        </div>
+
+        <!-- ======================================================
+             STEP 3: TRAITS & RARITY
+        ======================================================= -->
+        <div class="panel hidden" id="traits">
+          <h2>Traits &amp; Rarity</h2>
+
+          <p>
+            Upload traits for each layer and control how frequently each trait
+            can appear.
+          </p>
+
+          <div id="trait-editor" class="trait-editor"></div>
+
+          <div class="rarity-settings">
+            <h3>Rarity Settings</h3>
+
+            <label for="rarity-mode"> Rarity Method </label>
+
+            <select id="rarity-mode">
+              <option value="weights">Trait Weights</option>
+
+              <option value="percentages">Percentages</option>
+
+              <option value="random">Fully Random</option>
+            </select>
+
+            <small>
+              Trait weights control the probability of individual traits.
+              Identical trait combinations are prevented independently.
+            </small>
+
+            <label for="rarity-names"> Rarity Labels </label>
+
+            <input
+              id="rarity-names"
+              type="text"
+              value="Common,Uncommon,Rare,Epic,Legendary"
+              maxlength="500"
+              placeholder="Common,Uncommon,Rare,Epic,Legendary"
+            />
+          </div>
+
+          <div class="button-row">
+            <button type="button" id="back-layers">← Back</button>
+
+            <button type="button" id="continue-generate">Continue →</button>
+          </div>
+        </div>
+
+        <!-- ======================================================
+             STEP 4: GENERATE
+        ======================================================= -->
+        <div class="panel hidden" id="generate">
+          <h2>Generate Collection</h2>
+
+          <div class="summary">
+            <p>
+              Collection:
+              <strong id="summary-name">—</strong>
+            </p>
+
+            <p>
+              NFTs:
+              <strong id="summary-count">0</strong>
+            </p>
+
+            <p>
+              Layers:
+              <strong id="summary-layers">0</strong>
+            </p>
+
+            <p>
+              Traits:
+              <strong id="summary-traits">0</strong>
+            </p>
+
+            <p>
+              Maximum Possible Combinations:
+              <strong id="summary-combinations">0</strong>
+            </p>
+          </div>
+
+          <div class="generation-options">
+            <h3>Generation Options</h3>
+
+            <label>
+              <input type="checkbox" id="prevent-duplicates" checked />
+
+              Prevent identical trait combinations
+            </label>
+
+            <small>
+              The generator checks trait combinations only. It does not perform
+              unnecessary visual or file-similarity checks.
+            </small>
+
+            <label>
+              <input type="checkbox" id="include-rarity" checked />
+
+              Include rarity in metadata
+            </label>
+
+            <label>
+              <input type="checkbox" id="include-attributes" checked />
+
+              Include NFT attributes
+            </label>
+          </div>
+
+          <div
+            class="progress"
+            role="progressbar"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+          >
+            <div id="progress-bar" class="progress-bar"></div>
+          </div>
+
+          <p id="progress-text" aria-live="polite">Ready</p>
+
+          <div class="button-row">
+            <button type="button" id="back-traits">← Back</button>
+
+            <button type="button" id="generate-button">Generate NFTs</button>
+          </div>
+        </div>
+
+        <!-- ======================================================
+             STEP 5: PREVIEW & EXPORT
+        ======================================================= -->
+        <div class="panel hidden" id="export">
+          <h2>Collection Ready</h2>
+
+          <p id="export-text">Your collection has been generated.</p>
+
+          <!-- PREVIEW -->
+          <div class="preview-section">
+            <h3>Preview</h3>
+
+            <div id="nft-preview" class="nft-preview"></div>
+
+            <div id="nft-info" class="nft-info"></div>
+          </div>
+
+          <!-- EXPORT OPTIONS -->
+          <div class="export-options">
+            <h3>Export</h3>
+
+            <p>
+              Export your artwork and metadata for the next stage of your NFT
+              launch.
+            </p>
+
+            <button type="button" id="download-zip">
+              Download Complete ZIP
+            </button>
+
+            <button type="button" id="download-images">Download Images</button>
+
+            <button type="button" id="download-metadata">
+              Download Metadata
+            </button>
+
+            <button type="button" id="download-collection-metadata">
+              Download Collection Metadata
+            </button>
+          </div>
+
+          <button type="button" id="new-collection">
+            Create New Collection
+          </button>
+        </div>
+      </section>
+
+      <!-- MIDDLE AD -->
+      <div class="ad-slot" aria-label="Advertisement">
+        <!-- AdSense -->
+      </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+      <p>ODAVEN — Create. Explore. Connect.</p>
+
+      <a href="index.html"> Back to ODAVEN </a>
+    </footer>
+
+    <!-- JSZip -->
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+    <!-- ODAVEN NFT Generator -->
+    <script src="nft-generator.js"></script>
+  </body>
+  </html>
+                                                       
