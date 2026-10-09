@@ -922,3 +922,142 @@ function calculateRarity(selectedTraits) {
 }
 
 
+/* ============================================================
+   DUPLICATE COMBINATION PROTECTION
+   ============================================================ */
+
+function createCombinationKey(selections) {
+  return selections.map((item) => item.traitId).join("|");
+}
+
+function combinationRankToSelections(rank) {
+  const selections = [];
+  let remaining = rank;
+
+  for (let index = state.layers.length - 1; index >= 0; index -= 1) {
+    const layer = state.layers[index];
+    const traitCount = layer.traits.length;
+    const traitIndex = remaining % traitCount;
+
+    remaining = Math.floor(remaining / traitCount);
+
+    const trait = layer.traits[traitIndex];
+
+    selections[index] = {
+      layerId: layer.id,
+      layer,
+      traitId: trait.id,
+      trait,
+    };
+  }
+
+  return selections;
+}
+
+function randomCombinationRank(maximum) {
+  if (maximum <= Number.MAX_SAFE_INTEGER) {
+    return Math.floor(Math.random() * maximum);
+  }
+
+  const high = Math.floor(Math.random() * 67108864);
+  const low = Math.floor(Math.random() * 67108864);
+
+  return high * 67108864 + low;
+}
+
+function findUnusedCombinationByRank(usedCombinations, maximum) {
+  if (maximum <= 0) {
+    throw new Error("No trait combinations are available.");
+  }
+
+  const randomAttempts = Math.min(500, Math.max(20, state.collection.count));
+
+  for (let attempt = 0; attempt < randomAttempts; attempt += 1) {
+    const rank = randomCombinationRank(maximum);
+    const selections = combinationRankToSelections(rank);
+    const key = createCombinationKey(selections);
+
+    if (!usedCombinations.has(key)) {
+      return {
+        selections,
+        key,
+      };
+    }
+  }
+
+  const start = usedCombinations.size % maximum;
+  const scanLimit = Math.min(maximum, 100000);
+
+  for (let offset = 0; offset < scanLimit; offset += 1) {
+    const rank = (start + offset) % maximum;
+    const selections = combinationRankToSelections(rank);
+    const key = createCombinationKey(selections);
+
+    if (!usedCombinations.has(key)) {
+      return {
+        selections,
+        key,
+      };
+    }
+  }
+
+  if (maximum <= 1000000) {
+    for (let rank = 0; rank < maximum; rank += 1) {
+      const selections = combinationRankToSelections(rank);
+      const key = createCombinationKey(selections);
+
+      if (!usedCombinations.has(key)) {
+        return {
+          selections,
+          key,
+        };
+      }
+    }
+  }
+
+  throw new Error(
+    "Unable to find another unique trait combination.\n\n" +
+      "The available combination space is too crowded. " +
+      "Add more traits or reduce the NFT quantity.",
+  );
+}
+
+/* ============================================================
+   CANVAS
+   ============================================================ */
+
+async function composeNFT(selections) {
+  if (!state.imageDimensions.width || !state.imageDimensions.height) {
+    throw new Error("NFT image dimensions are not available.");
+  }
+
+  const canvas = document.createElement("canvas");
+
+  canvas.width = state.imageDimensions.width;
+  canvas.height = state.imageDimensions.height;
+
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    throw new Error("Your browser does not support canvas generation.");
+  }
+
+  context.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (const selection of selections) {
+    context.drawImage(selection.trait.image, 0, 0, canvas.width, canvas.height);
+  }
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        reject(new Error("Unable to create NFT image."));
+        return;
+      }
+
+      resolve(blob);
+    }, "image/png");
+  });
+}
+
+
