@@ -1,0 +1,276 @@
+/* =========================================================
+DREAMVERSE — THE FOUNDATION
+========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+
+  background: linear-gradient(180deg, #dff5ff 0%, #edfaff 45%, #ffffff 100%);
+
+  color: #111;
+
+  font-family: Arial, Helvetica, sans-serif;
+
+  -webkit-font-smoothing: antialiased;
+}
+
+/* =========================================================
+HEADER
+========================================================= */
+
+.foundation-header {
+  width: 100%;
+
+  padding: 24px 5vw;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.foundation-logo {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 12px;
+
+  color: #111;
+
+  text-decoration: none;
+
+  font-size: 15px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.18em;
+}
+
+.foundation-logo img {
+  width: 34px;
+  height: 34px;
+
+  display: block;
+
+  object-fit: contain;
+}
+
+/* =========================================================
+MAIN
+========================================================= */
+
+main {
+  width: min(1000px, 90%);
+
+  margin: 0 auto 100px;
+}
+
+/* =========================================================
+ARTWORK
+========================================================= */
+
+.foundation-artwork {
+  width: 100%;
+
+  margin: 45px auto 70px;
+
+  overflow: hidden;
+
+  background: #d8edf5;
+}
+
+.foundation-artwork img {
+  width: 100%;
+
+  height: auto;
+
+  display: block;
+
+  object-fit: cover;
+}
+
+/* =========================================================
+STORY
+========================================================= */
+
+.foundation-content {
+  width: min(720px, 100%);
+
+  margin: 0 auto;
+
+  text-align: center;
+}
+
+.foundation-label {
+  margin: 0 0 18px;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.25em;
+
+  opacity: 0.55;
+}
+
+.foundation-content h1 {
+  margin: 0 0 40px;
+
+  font-size: clamp(2rem, 5vw, 4rem);
+
+  line-height: 1.1;
+
+  letter-spacing: 0.08em;
+}
+
+.foundation-content p {
+  margin: 0 auto 24px;
+
+  max-width: 650px;
+
+  font-size: clamp(1rem, 2vw, 1.15rem);
+
+  line-height: 1.9;
+
+  opacity: 0.78;
+}
+
+/* =========================================================
+AUDIO
+========================================================= */
+
+.foundation-audio {
+  width: min(600px, 100%);
+
+  margin: 65px auto 0;
+
+  text-align: center;
+}
+
+.foundation-audio p {
+  margin: 0 0 18px;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.2em;
+
+  opacity: 0.55;
+}
+
+.foundation-audio audio {
+  width: 100%;
+
+  max-width: 500px;
+}
+
+/* =========================================================
+FOOTER
+========================================================= */
+
+footer {
+  width: 100%;
+
+  padding: 30px 20px 50px;
+
+  text-align: center;
+}
+
+.back-link {
+  color: #111;
+
+  text-decoration: none;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.15em;
+
+  transition: opacity 0.2s ease;
+}
+
+.back-link:hover {
+  opacity: 0.5;
+}
+
+footer p {
+  margin: 25px 0 0;
+
+  font-size: 11px;
+
+  opacity: 0.5;
+}
+
+/* =========================================================
+TABLET
+========================================================= */
+
+@media (max-width: 700px) {
+  .foundation-header {
+    padding: 20px;
+  }
+
+  main {
+    width: 92%;
+
+    margin-bottom: 70px;
+  }
+
+  .foundation-artwork {
+    margin: 30px auto 50px;
+  }
+
+  .foundation-content h1 {
+    margin-bottom: 30px;
+  }
+
+  .foundation-content p {
+    line-height: 1.8;
+  }
+}
+
+/* =========================================================
+MOBILE
+========================================================= */
+
+@media (max-width: 480px) {
+  .foundation-artwork {
+    margin: 20px auto 40px;
+  }
+
+  .foundation-content h1 {
+    font-size: 2rem;
+  }
+
+  .foundation-content p {
+    font-size: 0.98rem;
+  }
+
+  .foundation-audio {
+    margin-top: 50px;
+  }
+}
+
+/* =========================================================
+REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .back-link {
+    transition: none;
+  }
+  }
