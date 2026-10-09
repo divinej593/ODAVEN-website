@@ -827,3 +827,98 @@ function updateSummary() {
    TRAIT SELECTION
    ============================================================ */
 
+function randomIndex(length) {
+  if (length <= 0) {
+    return -1;
+  }
+
+  return Math.floor(Math.random() * length);
+}
+
+function chooseRandomTrait(traits) {
+  return traits[randomIndex(traits.length)];
+}
+
+function chooseWeightedTrait(traits) {
+  const validTraits = traits.filter((trait) => Number(trait.weight) > 0);
+
+  if (!validTraits.length) {
+    return chooseRandomTrait(traits);
+  }
+
+  const total = validTraits.reduce(
+    (sum, trait) => sum + Number(trait.weight),
+    0,
+  );
+
+  let random = Math.random() * total;
+
+  for (const trait of validTraits) {
+    random -= Number(trait.weight);
+
+    if (random <= 0) {
+      return trait;
+    }
+  }
+
+  return validTraits[validTraits.length - 1];
+}
+
+function chooseTrait(layer, mode) {
+  if (mode === "random") {
+    return chooseRandomTrait(layer.traits);
+  }
+
+  return chooseWeightedTrait(layer.traits);
+}
+/* ============================================================
+   RARITY
+   ============================================================ */
+
+function getRarityLabels() {
+  const input = $("rarity-names");
+  const labels = cleanText(input?.value);
+
+  if (!labels) {
+    return ["Common", "Uncommon", "Rare", "Epic", "Legendary"];
+  }
+
+  return labels.split(",").map(cleanText).filter(Boolean);
+}
+
+function calculateRarity(selectedTraits) {
+  if (!selectedTraits.length) {
+    return "Common";
+  }
+
+  const labels = getRarityLabels();
+
+  if (labels.length === 1) {
+    return labels[0];
+  }
+
+  const averageWeight =
+    selectedTraits.reduce((sum, trait) => {
+      return sum + Number(trait.weight || 1);
+    }, 0) / selectedTraits.length;
+
+  if (averageWeight <= 1) {
+    return labels[labels.length - 1];
+  }
+
+  if (averageWeight <= 5) {
+    return labels[Math.min(labels.length - 2, 3)];
+  }
+
+  if (averageWeight <= 15) {
+    return labels[Math.min(labels.length - 3, 2)];
+  }
+
+  if (averageWeight <= 35) {
+    return labels[Math.min(labels.length - 4, 1)];
+  }
+
+  return labels[0];
+}
+
+
