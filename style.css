@@ -794,3 +794,36 @@ h3 {
     transform: none;
   }
   }
+.opensea-section {
+  text-align: center;
+  padding: 50px 20px;
+}
+
+.opensea-section h2 {
+  font-size: 2rem;
+  margin-bottom: 12px;
+}
+
+.opensea-section p {
+  margin-bottom: 22px;
+}
+
+.opensea-button {
+  display: inline-block;
+  padding: 14px 28px;
+  background: #111;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+}
+
+.opensea-button:hover {
+  opacity: 0.8;
+}
+
+.opensea-note {
+  font-size: 0.85rem;
+  margin-top: 18px;
+}
