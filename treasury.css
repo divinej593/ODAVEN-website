@@ -1,0 +1,336 @@
+/* =========================================================
+   ODAVEN — TREASURY
+   ========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+
+  background: linear-gradient(180deg, #dff5ff 0%, #edfaff 45%, #ffffff 100%);
+
+  color: #111;
+
+  font-family: Arial, Helvetica, sans-serif;
+
+  -webkit-font-smoothing: antialiased;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.treasury-header {
+  width: 100%;
+
+  padding: 24px 5vw;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.treasury-logo {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 8px;
+
+  color: #111;
+
+  text-decoration: none;
+
+  font-size: 15px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.18em;
+}
+
+/* LOGO SIZE */
+.treasury-logo img {
+  width: 24px;
+  height: 24px;
+
+  display: block;
+
+  object-fit: contain;
+}
+
+/* =========================================================
+   MAIN
+   ========================================================= */
+
+main {
+  width: min(900px, 92%);
+
+  margin: 0 auto 100px;
+}
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.treasury-hero {
+  width: min(760px, 100%);
+
+  margin: 75px auto 100px;
+
+  text-align: center;
+}
+
+.treasury-label {
+  margin: 0 0 18px;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.25em;
+
+  opacity: 0.5;
+}
+
+.treasury-hero h1 {
+  margin: 0;
+
+  font-size: clamp(2.8rem, 8vw, 5.5rem);
+
+  line-height: 1;
+
+  letter-spacing: 0.08em;
+}
+
+.treasury-hero > p:last-child {
+  width: min(620px, 100%);
+
+  margin: 28px auto 0;
+
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+
+  line-height: 1.8;
+
+  opacity: 0.65;
+}
+
+/* =========================================================
+   SECTIONS
+   ========================================================= */
+
+.treasury-section {
+  width: min(720px, 100%);
+
+  margin: 0 auto 100px;
+
+  text-align: center;
+}
+
+.treasury-section h2 {
+  margin: 0 0 30px;
+
+  font-size: clamp(1.3rem, 3vw, 2rem);
+
+  letter-spacing: 0.08em;
+}
+
+.treasury-section > p {
+  max-width: 650px;
+
+  margin: 0 auto 22px;
+
+  font-size: clamp(0.95rem, 2vw, 1.08rem);
+
+  line-height: 1.85;
+
+  opacity: 0.7;
+}
+
+/* =========================================================
+   TREASURY ROADMAP
+   ========================================================= */
+
+.treasury-roadmap {
+  display: grid;
+
+  gap: 14px;
+
+  margin-top: 40px;
+}
+
+.treasury-item {
+  display: grid;
+
+  grid-template-columns: 50px 1fr;
+
+  align-items: center;
+
+  gap: 15px;
+
+  padding: 22px 24px;
+
+  border: 1px solid rgba(17, 17, 17, 0.12);
+
+  background: rgba(255, 255, 255, 0.35);
+
+  text-align: left;
+}
+
+.treasury-item span {
+  font-size: 10px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.15em;
+
+  opacity: 0.45;
+}
+
+.treasury-item h3 {
+  margin: 0;
+
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+
+  font-weight: 600;
+
+  letter-spacing: 0.03em;
+}
+
+/* =========================================================
+   FUTURE
+   ========================================================= */
+
+.treasury-future strong {
+  display: block;
+
+  margin-top: 35px;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.18em;
+}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+footer {
+  width: 100%;
+
+  padding: 30px 20px 50px;
+
+  text-align: center;
+}
+
+.back-link {
+  color: #111;
+
+  text-decoration: none;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.15em;
+
+  transition: opacity 0.2s ease;
+}
+
+.back-link:hover {
+  opacity: 0.5;
+}
+
+footer p {
+  margin: 25px 0 0;
+
+  font-size: 11px;
+
+  opacity: 0.5;
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 700px) {
+  .treasury-header {
+    padding: 20px;
+  }
+
+  main {
+    width: 94%;
+  }
+
+  .treasury-hero {
+    margin: 55px auto 75px;
+  }
+
+  .treasury-section {
+    margin-bottom: 75px;
+  }
+
+  .treasury-logo img {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 480px) {
+  main {
+    width: 92%;
+  }
+
+  .treasury-hero {
+    margin: 45px auto 60px;
+  }
+
+  .treasury-hero h1 {
+    font-size: 2.8rem;
+  }
+
+  .treasury-section {
+    margin-bottom: 65px;
+  }
+
+  .treasury-item {
+    grid-template-columns: 38px 1fr;
+
+    padding: 20px;
+  }
+
+  .treasury-logo img {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .back-link {
+    transition: none;
+  }
+}
+.logo {
+  width: 20px !important;
+  height: 20px !important;
+  object-fit: contain;
+  }
