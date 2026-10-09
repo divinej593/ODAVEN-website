@@ -1061,3 +1061,619 @@ async function composeNFT(selections) {
 }
 
 
+/* ============================================================
+   METADATA
+   ============================================================ */
+function buildImageURI(tokenNumber) {
+  const base = cleanText(state.collection.imageBaseURI);
+  const filename = `${tokenNumber}.png`;
+
+  if (!base) {
+    return `IPFS_URI_REQUIRED/${filename}`;
+  }
+
+  return `${base.replace(/\/+$/, "")}/${filename}`;
+}
+
+function buildMetadata(tokenNumber, selections) {
+  const metadata = {
+    name: `${state.collection.name} #${tokenNumber}`,
+    description: state.collection.description,
+    image: buildImageURI(tokenNumber),
+  };
+
+  if ($("include-attributes")?.checked !== false) {
+    metadata.attributes = selections.map((selection) => ({
+      trait_type: selection.layer.name,
+      value: selection.trait.name,
+    }));
+  }
+
+  if ($("include-rarity")?.checked !== false) {
+    metadata.rarity = calculateRarity(
+      selections.map((selection) => selection.trait),
+    );
+  }
+
+  if (state.collection.website) {
+    metadata.external_url = state.collection.website;
+  }
+
+  return metadata;
+}
+
+/* ============================================================
+   GENERATE ONE NFT
+   ============================================================ */
+
+function selectTraitsForNFT(rarityMode) {
+  return state.layers.map((layer) => {
+    const trait = chooseTrait(layer, rarityMode);
+
+    return {
+      layerId: layer.id,
+      layer,
+      traitId: trait.id,
+      trait,
+    };
+  });
+}
+
+async function generateOneNFT(
+  tokenNumber,
+  usedCombinations,
+  preventDuplicates,
+  rarityMode,
+  maximumCombinations,
+) {
+  let selections = null;
+  let key = "";
+
+  if (preventDuplicates) {
+    const maximumAttempts = 100;
+
+    for (let attempt = 0; attempt < maximumAttempts; attempt += 1) {
+      selections = selectTraitsForNFT(rarityMode);
+      key = createCombinationKey(selections);
+
+      if (!usedCombinations.has(key)) {
+        break;
+      }
+
+      selections = null;
+    }
+
+    if (!selections) {
+      const fallback = findUnusedCombinationByRank(
+        usedCombinations,
+        maximumCombinations,
+      );
+
+      selections = fallback.selections;
+      key = fallback.key;
+    }
+
+    usedCombinations.add(key);
+  } else {
+    selections = selectTraitsForNFT(rarityMode);
+    key = createCombinationKey(selections);
+  }
+
+  const imageBlob = await composeNFT(selections);
+  const metadata = buildMetadata(tokenNumber, selections);
+
+  return {
+    tokenNumber,
+    imageBlob,
+    metadata,
+    combinationKey: key,
+  };
+}
+
+/* ============================================================
+   PROGRESS
+   ============================================================ */
+
+function updateProgress(current, total, message) {
+  const percentage =
+    total > 0 ? Math.min(100, Math.round((current / total) * 100)) : 0;
+
+  const bar = $("progress-bar");
+
+  if (bar) {
+    bar.style.width = `${percentage}%`;
+  }
+
+  const progress = document.querySelector(".progress");
+
+  if (progress) {
+    progress.setAttribute("aria-valuenow", String(percentage));
+  }
+
+  setText(
+    "progress-text",
+    message ||
+      `${current.toLocaleString()} / ${total.toLocaleString()} NFTs generated`,
+  );
+}
+
+/* ============================================================
+   GENERATE COLLECTION
+   ============================================================ */
+
+async function generateCollection() {
+  if (state.isGenerating) {
+    return;
+  }
+
+  try {
+    readCollectionSetup();
+    validateLayers();
+    updateSummary();
+
+    const count = state.collection.count;
+    const preventDuplicates = $("prevent-duplicates")?.checked !== false;
+    const rarityMode = $("rarity-mode")?.value || "weights";
+    const maximumCombinations = calculateMaximumCombinations();
+
+    state.isGenerating = true;
+    state.generated = [];
+
+    const usedCombinations = new Set();
+
+    updateProgress(0, count, "Preparing generation...");
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    for (let number = 1; number <= count; number += 1) {
+      const nft = await generateOneNFT(
+        number,
+        usedCombinations,
+        preventDuplicates,
+        rarityMode,
+        maximumCombinations,
+      );
+
+      state.generated.push(nft);
+
+      updateProgress(
+        number,
+        count,
+        `Generating NFT ${number.toLocaleString()} of ${count.toLocaleString()}...`,
+      );
+
+      if (number % 2 === 0) {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
+    }
+
+    updateProgress(
+      count,
+      count,
+      `Generation complete — ${count.toLocaleString()} NFTs ready.`,
+    );
+
+    renderPreview();
+    showPanel("export");
+  } catch (error) {
+    showError(error.message || "Generation failed.");
+  } finally {
+    state.isGenerating = false;
+  }
+}
+
+/* ============================================================
+   PREVIEW
+   ============================================================ */
+
+function renderPreview() {
+  const preview = $("nft-preview");
+  const info = $("nft-info");
+
+  if (!preview) {
+    return;
+  }
+
+  preview.innerHTML = "";
+
+  if (info) {
+    info.innerHTML = "";
+  }
+
+  if (!state.generated.length) {
+    return;
+  }
+
+  const nft = state.generated[0];
+  const url = URL.createObjectURL(nft.imageBlob);
+  const image = document.createElement("img");
+
+  image.src = url;
+  image.alt = nft.metadata.name;
+
+  image.onload = () => {
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 1000);
+  };
+
+  preview.appendChild(image);
+
+  if (info) {
+    const title = document.createElement("strong");
+    title.textContent = nft.metadata.name;
+    info.appendChild(title);
+
+    if (nft.metadata.rarity) {
+      const rarity = document.createElement("p");
+      rarity.textContent = `Rarity: ${nft.metadata.rarity}`;
+      info.appendChild(rarity);
+    }
+  }
+
+  setText(
+    "export-text",
+    `${state.generated.length.toLocaleString()} NFTs have been generated successfully.`,
+  );
+}
+
+/* ============================================================
+   JSZIP
+   ============================================================ */
+
+function ensureJSZip() {
+  if (typeof JSZip === "undefined") {
+    throw new Error(
+      "ZIP support is unavailable.\n\n" +
+        "Make sure JSZip is loaded before nft-generator.js in your HTML.",
+    );
+  }
+}
+
+function metadataJSON(metadata) {
+  return JSON.stringify(metadata, null, 2);
+}
+
+/* ============================================================
+   IMAGES ZIP
+   ============================================================ */
+
+async function createImagesZip() {
+  ensureJSZip();
+
+  if (!state.generated.length) {
+    throw new Error("There are no generated NFTs to download.");
+  }
+
+  const zip = new JSZip();
+  const folder = zip.folder("images");
+
+  state.generated.forEach((nft) => {
+    folder.file(`${nft.tokenNumber}.png`, nft.imageBlob);
+  });
+
+  return zip.generateAsync({
+    type: "blob",
+    compression: "STORE",
+  });
+}
+
+/* ============================================================
+   METADATA ZIP
+   ============================================================ */
+
+async function createMetadataZip() {
+  ensureJSZip();
+
+  if (!state.generated.length) {
+    throw new Error("There is no metadata to download.");
+  }
+
+  const zip = new JSZip();
+  const folder = zip.folder("metadata");
+
+  state.generated.forEach((nft) => {
+    folder.file(`${nft.tokenNumber}.json`, metadataJSON(nft.metadata));
+  });
+
+  return zip.generateAsync({
+    type: "blob",
+    compression: "DEFLATE",
+    compressionOptions: {
+      level: 6,
+    },
+  });
+}
+
+/* ============================================================
+   COLLECTION METADATA
+   ============================================================ */
+
+function buildCollectionMetadata() {
+  const metadata = {
+    name: state.collection.name,
+    description: state.collection.description,
+  };
+
+  if (state.collection.website) {
+    metadata.external_link = state.collection.website;
+  }
+
+  return metadata;
+}
+
+function downloadCollectionMetadata() {
+  try {
+    if (!state.generated.length) {
+      throw new Error("Generate your collection first.");
+    }
+
+    const json = JSON.stringify(buildCollectionMetadata(), null, 2);
+
+    const blob = new Blob([json], {
+      type: "application/json",
+    });
+
+    downloadBlob(blob, "collection.json");
+  } catch (error) {
+    showError(error.message || "Unable to download collection metadata.");
+  }
+}
+
+/* ============================================================
+   COMPLETE ZIP
+   ============================================================ */
+
+async function createCompleteZip() {
+  ensureJSZip();
+
+  if (!state.generated.length) {
+    throw new Error("Generate your collection first.");
+  }
+
+  const zip = new JSZip();
+
+  const images = zip.folder("images");
+  const metadata = zip.folder("metadata");
+
+  state.generated.forEach((nft) => {
+    images.file(`${nft.tokenNumber}.png`, nft.imageBlob);
+    metadata.file(`${nft.tokenNumber}.json`, metadataJSON(nft.metadata));
+  });
+
+  metadata.file(
+    "collection.json",
+    JSON.stringify(buildCollectionMetadata(), null, 2),
+  );
+
+  zip.file(
+    "README.txt",
+    [
+      "ODAVEN NFT STUDIO",
+      "",
+      `Collection: ${state.collection.name}`,
+      `NFTs: ${state.generated.length}`,
+      "",
+      "Folders:",
+      "- images/",
+      "- metadata/",
+      "",
+      "Important:",
+      "If no IPFS Base URI was entered, replace the IPFS_URI_REQUIRED placeholder in the metadata after uploading the images to IPFS.",
+      "",
+      "Duplicate protection:",
+      "When enabled, each NFT has a unique combination of layer traits.",
+    ].join("\n"),
+  );
+
+  return zip.generateAsync({
+    type: "blob",
+    compression: "DEFLATE",
+    compressionOptions: {
+      level: 6,
+    },
+  });
+}
+
+/* ============================================================
+   DOWNLOAD BUTTONS
+   ============================================================ */
+
+async function downloadImages() {
+  try {
+    setText("progress-text", "Preparing images ZIP...");
+
+    const blob = await createImagesZip();
+
+    downloadBlob(blob, `${slugify(state.collection.name)}-images.zip`);
+
+    setText("progress-text", "Images ZIP downloaded.");
+  } catch (error) {
+    showError(error.message || "Unable to download images.");
+  }
+}
+
+async function downloadMetadata() {
+  try {
+    setText("progress-text", "Preparing metadata ZIP...");
+
+    const blob = await createMetadataZip();
+
+    downloadBlob(blob, `${slugify(state.collection.name)}-metadata.zip`);
+
+    setText("progress-text", "Metadata ZIP downloaded.");
+  } catch (error) {
+    showError(error.message || "Unable to download metadata.");
+  }
+}
+
+async function downloadCompleteZip() {
+  try {
+    setText("progress-text", "Preparing complete collection ZIP...");
+
+    const blob = await createCompleteZip();
+
+    downloadBlob(blob, `${slugify(state.collection.name)}-complete.zip`);
+
+    setText("progress-text", "Complete ZIP downloaded.");
+  } catch (error) {
+    showError(error.message || "Unable to download complete ZIP.");
+  }
+}
+
+/* ============================================================
+   RESET
+   ============================================================ */
+
+function resetGenerator() {
+  if (
+    !window.confirm(
+      "Start a new collection?\n\n" +
+        "Your current generated collection will be cleared.",
+    )
+  ) {
+    return;
+  }
+
+  state.collection = {
+    name: "ODAVEN",
+    description: "",
+    count: 10,
+    website: "",
+    imageBaseURI: "",
+  };
+
+  state.layers = [];
+  state.generated = [];
+  state.isGenerating = false;
+
+  state.imageDimensions = {
+    width: null,
+    height: null,
+  };
+
+  if ($("collection-name")) {
+    $("collection-name").value = "ODAVEN";
+  }
+
+  if ($("collection-description")) {
+    $("collection-description").value = "";
+  }
+
+  if ($("nft-count")) {
+    $("nft-count").value = "10";
+  }
+
+  if ($("external-url")) {
+    $("external-url").value = "";
+  }
+
+  if ($("image-base-uri")) {
+    $("image-base-uri").value = "";
+  }
+
+  if ($("rarity-mode")) {
+    $("rarity-mode").value = "weights";
+  }
+
+  if ($("rarity-names")) {
+    $("rarity-names").value = "Common,Uncommon,Rare,Epic,Legendary";
+  }
+
+  if ($("prevent-duplicates")) {
+    $("prevent-duplicates").checked = true;
+  }
+
+  if ($("include-rarity")) {
+    $("include-rarity").checked = true;
+  }
+
+  if ($("include-attributes")) {
+    $("include-attributes").checked = true;
+  }
+
+  if ($("progress-bar")) {
+    $("progress-bar").style.width = "0%";
+  }
+
+  const progress = document.querySelector(".progress");
+
+  if (progress) {
+    progress.setAttribute("aria-valuenow", "0");
+  }
+
+  setText("progress-text", "Ready");
+
+  renderLayers();
+  showPanel("setup");
+}
+
+/* ============================================================
+   INITIALIZATION
+   ============================================================ */
+
+function initialize() {
+  $("continue-layers")?.addEventListener("click", continueToLayers);
+
+  $("add-layer")?.addEventListener("click", addLayer);
+
+  $("back-setup")?.addEventListener("click", () => {
+    showPanel("setup");
+  });
+
+  $("continue-traits")?.addEventListener("click", () => {
+    try {
+      validateLayers();
+      showPanel("traits");
+    } catch (error) {
+      showError(error.message || "Layer validation failed.");
+    }
+  });
+
+  $("back-layers")?.addEventListener("click", () => {
+    showPanel("layers");
+  });
+
+  $("continue-generate")?.addEventListener("click", () => {
+    try {
+      validateLayers();
+      updateSummary();
+      showPanel("generate");
+    } catch (error) {
+      showError(error.message || "Trait validation failed.");
+    }
+  });
+
+  $("back-traits")?.addEventListener("click", () => {
+    showPanel("traits");
+  });
+
+  $("generate-button")?.addEventListener("click", generateCollection);
+
+  $("download-zip")?.addEventListener("click", downloadCompleteZip);
+
+  $("download-images")?.addEventListener("click", downloadImages);
+
+  $("download-metadata")?.addEventListener("click", downloadMetadata);
+
+  $("download-collection-metadata")?.addEventListener(
+    "click",
+    downloadCollectionMetadata,
+  );
+
+  $("new-collection")?.addEventListener("click", resetGenerator);
+
+  renderLayers();
+  showPanel("setup");
+}
+
+/* ============================================================
+   START
+   ============================================================ */
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initialize, { once: true });
+} else {
+  initialize();
+                          }
+    
